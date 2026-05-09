@@ -33,8 +33,9 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
         child: provider.isLoading
             ? const Center(child: CircularProgressIndicator())
             : provider.categories.isEmpty
-                ? const Center(child: Text('No categories found.'))
+                ? ListView(physics: const AlwaysScrollableScrollPhysics(), children: const [SizedBox(height: 300), Center(child: Text('No categories found.'))])
                 : ListView.builder(
+                    physics: const AlwaysScrollableScrollPhysics(),
                     padding: const EdgeInsets.all(12),
                     itemCount: provider.categories.length,
                     itemBuilder: (context, index) {
@@ -81,7 +82,13 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
             onPressed: () async {
               if (controller.text.isNotEmpty) {
                 final success = await Provider.of<CategoryProvider>(context, listen: false).createCategory(controller.text);
-                if (success) Navigator.pop(context);
+                if (success) {
+                  Navigator.pop(context);
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Failed to add category. Server might still be deploying.')),
+                  );
+                }
               }
             },
             child: const Text('Save'),

@@ -105,8 +105,9 @@ class _ContactListScreenState extends State<ContactListScreen> {
               child: contactProvider.isLoading
                   ? const Center(child: CircularProgressIndicator())
                   : contactProvider.contacts.isEmpty
-                      ? const Center(child: Text('No contacts found.'))
+                      ? ListView(physics: const AlwaysScrollableScrollPhysics(), children: const [SizedBox(height: 300), Center(child: Text('No contacts found.'))])
                       : ListView.builder(
+                          physics: const AlwaysScrollableScrollPhysics(),
                           padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
                           itemCount: contactProvider.contacts.length,
                           itemBuilder: (context, index) {

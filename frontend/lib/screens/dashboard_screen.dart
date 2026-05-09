@@ -373,10 +373,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
             title: Text(task['title'], style: const TextStyle(fontWeight: FontWeight.bold)),
             subtitle: Text('Status: ${task['status']}', style: TextStyle(color: Colors.grey[600], fontSize: 13)),
-            trailing: Text(
-              task['created_at'].toString().split(' ')[0],
-              style: TextStyle(fontSize: 12, color: Colors.grey[400]),
-            ),
           ),
         );
       },

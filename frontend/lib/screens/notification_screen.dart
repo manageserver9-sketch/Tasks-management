@@ -41,7 +41,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
         child: provider.isLoading
             ? const Center(child: CircularProgressIndicator())
             : provider.notifications.isEmpty
-                ? const Center(child: Text('No notifications.'))
+                ? ListView(physics: const AlwaysScrollableScrollPhysics(), children: const [SizedBox(height: 300), Center(child: Text('No notifications.'))])
                 : ListView.builder(
                     physics: const AlwaysScrollableScrollPhysics(),
                     padding: const EdgeInsets.all(12),

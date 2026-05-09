@@ -113,9 +113,11 @@ class _TaskListScreenState extends State<TaskListScreen> with SingleTickerProvid
   }
 
   Widget _buildTaskList(List<dynamic> tasks) {
-    if (tasks.isEmpty) return const Center(child: Text('No tasks found.'));
-
+    if (tasks.isEmpty) {
+      return ListView(physics: const AlwaysScrollableScrollPhysics(), children: const [SizedBox(height: 300), Center(child: Text('No tasks found.'))]);
+    }
     return ListView.builder(
+      physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.all(12),
       itemCount: tasks.length,
       itemBuilder: (context, index) {
