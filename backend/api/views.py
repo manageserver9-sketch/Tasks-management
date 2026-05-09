@@ -1,8 +1,9 @@
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework_simplejwt.tokens import RefreshToken
-from .models import Users, Contacts, Tasks, Notifications, Followups
-from .serializers import UserSerializer, ContactSerializer, TaskSerializer, NotificationSerializer
+from .models import Users, Contacts, Tasks, Notifications, Followups, Categories
+from .serializers import UserSerializer, ContactSerializer, TaskSerializer, NotificationSerializer, CategorySerializer
+
 from .utils import json_response
 from django.db.models import Q
 from django.utils import timezone
@@ -239,6 +240,45 @@ def dashboard_stats(request):
 
     recent_notifications = Notifications.objects.filter(user_id=user_id).order_by('-created_at')[:5]
     stats['recent_notifications'] = list(recent_notifications.values('message', 'created_at'))
+# CATEGORIES
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def categories_read(request):
+    cats = Categories.objects.all().order_by('name')
+    serializer = CategorySerializer(cats, many=True)
+    return json_response(True, "Categories retrieved successfully.", serializer.data)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def categories_create(request):
+    serializer = CategorySerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return json_response(True, "Category created successfully.", status=201)
+    return json_response(False, "Unable to create category.", serializer.errors, status=400)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def categories_update(request):
+    cat_id = request.data.get('id')
+    try:
+        cat = Categories.objects.get(id=cat_id)
+        cat.name = request.data.get('name', cat.name)
+        cat.save()
+        return json_response(True, "Category updated successfully.")
+    except Categories.DoesNotExist:
+        return json_response(False, "Category not found.", status=404)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def categories_delete(request):
+    cat_id = request.data.get('id')
+    try:
+        cat = Categories.objects.get(id=cat_id)
+        cat.delete()
+        return json_response(True, "Category deleted successfully.")
+    except Categories.DoesNotExist:
+        return json_response(False, "Category not found.", status=404)
 
     return json_response(True, "Dashboard stats retrieved successfully", stats)
 

@@ -61,9 +61,10 @@ WSGI_APPLICATION = 'task_manager.wsgi.application'
 
 DATABASES = {
     'default': dj_database_url.config(
-        default="mysql://root:PoEknNUqSMRlElrSdjoGPpznmaBOBFOD@mysql.railway.internal:3306/railway",
+        default="mysql://root:PoEknNUqSMRlElrSdjoGPpznmaBOBFOD@viaduct.proxy.rlwy.net:45477/railway",
         conn_max_age=600
     )
+
 
 }
 

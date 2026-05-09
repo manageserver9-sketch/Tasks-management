@@ -89,15 +89,18 @@ class _TaskListScreenState extends State<TaskListScreen> with SingleTickerProvid
             ),
           ),
           Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                _buildTaskList(taskProvider.tasks.where((t) => t['assigned_to'] == auth.user?['id']).toList()),
-                _buildTaskList(taskProvider.tasks),
-                _buildTaskList(taskProvider.tasks.where((t) => t['status'] == 'pending').toList()),
-                _buildTaskList(taskProvider.tasks.where((t) => t['status'] == 'follow_up').toList()),
-                _buildTaskList(taskProvider.tasks.where((t) => t['status'] == 'completed').toList()),
-              ],
+            child: RefreshIndicator(
+              onRefresh: () => taskProvider.fetchTasks(search: _searchController.text),
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  _buildTaskList(taskProvider.tasks.where((t) => t['assigned_to'] == auth.user?['id']).toList()),
+                  _buildTaskList(taskProvider.tasks),
+                  _buildTaskList(taskProvider.tasks.where((t) => t['status'] == 'pending').toList()),
+                  _buildTaskList(taskProvider.tasks.where((t) => t['status'] == 'follow_up').toList()),
+                  _buildTaskList(taskProvider.tasks.where((t) => t['status'] == 'completed').toList()),
+                ],
+              ),
             ),
           ),
         ],

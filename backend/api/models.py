@@ -39,10 +39,18 @@ class Users(AbstractBaseUser, PermissionsMixin):
         db_table = 'users'
 
 
+class Categories(models.Model):
+    name = models.CharField(max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'categories'
+
 class Contacts(models.Model):
     name = models.CharField(max_length=255)
     phone = models.CharField(max_length=20, blank=True, null=True)
     email = models.CharField(max_length=255, blank=True, null=True)
+    category = models.ForeignKey(Categories, models.SET_NULL, blank=True, null=True, db_column='category_id')
     added_by = models.ForeignKey(Users, models.CASCADE, db_column='added_by')
     created_at = models.DateTimeField(auto_now_add=True)
 

@@ -39,4 +39,11 @@ urlpatterns = [
     path('users/read.php', views.users_read),
     path('notifications/read.php', views.notifications_read),
     path('notifications/mark_as_read.php', views.notifications_mark_as_read),
+
+    # Categories
+    path('categories/read/', views.categories_read, name='categories_read'),
+    path('categories/create/', views.categories_create, name='categories_create'),
+    path('categories/update/', views.categories_update, name='categories_update'),
+    path('categories/delete/', views.categories_delete, name='categories_delete'),
 ]
+

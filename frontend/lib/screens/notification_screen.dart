@@ -36,34 +36,38 @@ class _NotificationScreenState extends State<NotificationScreen> {
         ],
       ),
       drawer: const AppDrawer(),
-      body: provider.isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : provider.notifications.isEmpty
-              ? const Center(child: Text('No notifications.'))
-              : ListView.builder(
-                  padding: const EdgeInsets.all(12),
-                  itemCount: provider.notifications.length,
-                  itemBuilder: (context, index) {
-                    final notif = provider.notifications[index];
-                    return Card(
-                      color: notif['is_read'] == 0 ? Colors.indigo.shade50 : null,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      child: ListTile(
-                        title: Text(notif['message']),
-                        subtitle: Text(DateFormat('MMM dd, hh:mm a').format(DateTime.parse(notif['created_at']))),
-                        leading: Icon(
-                          notif['is_read'] == 0 ? Icons.notifications_active : Icons.notifications_none,
-                          color: notif['is_read'] == 0 ? Colors.indigo : Colors.grey,
+      body: RefreshIndicator(
+        onRefresh: () => provider.fetchNotifications(),
+        child: provider.isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : provider.notifications.isEmpty
+                ? const Center(child: Text('No notifications.'))
+                : ListView.builder(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.all(12),
+                    itemCount: provider.notifications.length,
+                    itemBuilder: (context, index) {
+                      final notif = provider.notifications[index];
+                      return Card(
+                        color: notif['is_read'] == 0 ? Colors.indigo.shade50 : null,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        child: ListTile(
+                          title: Text(notif['message']),
+                          subtitle: Text(DateFormat('MMM dd, hh:mm a').format(DateTime.parse(notif['created_at']))),
+                          leading: Icon(
+                            notif['is_read'] == 0 ? Icons.notifications_active : Icons.notifications_none,
+                            color: notif['is_read'] == 0 ? Colors.indigo : Colors.grey,
+                          ),
+                          onTap: () {
+                            if (notif['is_read'] == 0) {
+                              provider.markAsRead(id: notif['id']);
+                            }
+                          },
                         ),
-                        onTap: () {
-                          if (notif['is_read'] == 0) {
-                            provider.markAsRead(id: notif['id']);
-                          }
-                        },
-                      ),
-                    );
-                  },
-                ),
+                      );
+                    },
+                  ),
+      ),
     );
   }
 }

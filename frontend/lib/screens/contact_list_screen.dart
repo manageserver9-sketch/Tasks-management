@@ -31,7 +31,11 @@ class _ContactListScreenState extends State<ContactListScreen> {
   }
 
   void _launchWhatsApp(String number) async {
-    final url = Uri.parse('https://wa.me/91$number');
+    // Remove any non-digit characters from the number
+    String cleanNumber = number.replaceAll(RegExp(r'\D'), '');
+    if (cleanNumber.length == 10) cleanNumber = '91$cleanNumber';
+    
+    final url = Uri.parse('https://wa.me/$cleanNumber');
     if (await canLaunchUrl(url)) {
       await launchUrl(url, mode: LaunchMode.externalApplication);
     }
@@ -93,58 +97,61 @@ class _ContactListScreenState extends State<ContactListScreen> {
             ),
           ),
           Expanded(
-            child: contactProvider.isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : contactProvider.contacts.isEmpty
-                    ? const Center(child: Text('No contacts found.'))
-                    : ListView.builder(
-                        padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-                        itemCount: contactProvider.contacts.length,
-                        itemBuilder: (context, index) {
-                          final contact = contactProvider.contacts[index];
-                          return Card(
-                            elevation: 1,
-                            margin: const EdgeInsets.only(bottom: 15),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 8),
-                              child: ListTile(
-                                leading: CircleAvatar(
-                                  radius: 25,
-                                  backgroundColor: Colors.indigo.shade600,
-                                  child: Text(
-                                    contact['name'][0].toUpperCase(),
-                                    style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+            child: RefreshIndicator(
+              onRefresh: () => contactProvider.fetchContacts(search: _searchController.text),
+              child: contactProvider.isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : contactProvider.contacts.isEmpty
+                      ? const Center(child: Text('No contacts found.'))
+                      : ListView.builder(
+                          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                          itemCount: contactProvider.contacts.length,
+                          itemBuilder: (context, index) {
+                            final contact = contactProvider.contacts[index];
+                            return Card(
+                              elevation: 1,
+                              margin: const EdgeInsets.only(bottom: 15),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 8),
+                                child: ListTile(
+                                  leading: CircleAvatar(
+                                    radius: 25,
+                                    backgroundColor: Colors.indigo.shade600,
+                                    child: Text(
+                                      contact['name'][0].toUpperCase(),
+                                      style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                                    ),
                                   ),
+                                  title: Text(contact['name'], style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                                  subtitle: Text(contact['phone'], style: const TextStyle(color: Colors.grey)),
+                                  trailing: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      IconButton(
+                                        icon: const Icon(Icons.call, color: Colors.green, size: 22),
+                                        onPressed: () => _launchCaller(contact['phone']),
+                                        tooltip: 'Call',
+                                      ),
+                                      IconButton(
+                                        icon: const FaIcon(FontAwesomeIcons.whatsapp, color: Color(0xFF25D366), size: 24),
+                                        onPressed: () => _launchWhatsApp(contact['phone']),
+                                        tooltip: 'WhatsApp',
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(Icons.delete_outline, color: Colors.redAccent, size: 24),
+                                        onPressed: () => _confirmDelete(context, contact),
+                                        tooltip: 'Delete',
+                                      ),
+                                    ],
+                                  ),
+                                  onTap: () => _showEditDialog(context, contact),
                                 ),
-                                title: Text(contact['name'], style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-                                subtitle: Text(contact['phone'], style: const TextStyle(color: Colors.grey)),
-                                trailing: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    IconButton(
-                                      icon: const Icon(Icons.call, color: Colors.green, size: 22),
-                                      onPressed: () => _launchCaller(contact['phone']),
-                                      tooltip: 'Call',
-                                    ),
-                                    IconButton(
-                                      icon: const FaIcon(FontAwesomeIcons.whatsapp, color: Color(0xFF25D366), size: 24),
-                                      onPressed: () => _launchWhatsApp(contact['phone']),
-                                      tooltip: 'WhatsApp',
-                                    ),
-                                    IconButton(
-                                      icon: const Icon(Icons.delete_outline, color: Colors.redAccent, size: 24),
-                                      onPressed: () => _confirmDelete(context, contact),
-                                      tooltip: 'Delete',
-                                    ),
-                                  ],
-                                ),
-                                onTap: () => _showEditDialog(context, contact),
                               ),
-                            ),
-                          );
-                        },
-                      ),
+                            );
+                          },
+                        ),
+            ),
           ),
         ],
       ),

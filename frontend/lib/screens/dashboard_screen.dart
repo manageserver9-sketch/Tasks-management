@@ -28,6 +28,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Future<void> _refreshData() async {
     await Provider.of<TaskProvider>(context, listen: false).fetchDashboardStats();
+    await Provider.of<NotificationProvider>(context, listen: false).fetchNotifications();
   }
 
   @override
