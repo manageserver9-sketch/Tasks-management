@@ -128,8 +128,17 @@ def tasks_create(request):
 
     serializer = TaskSerializer(data=data)
     if serializer.is_valid():
-        serializer.save()
+        task = serializer.save()
+        
+        # Create Notification
+        if task.assigned_to:
+            Notifications.objects.create(
+                user=task.assigned_to,
+                message=f"New task assigned: {task.title}"
+            )
+            
         return json_response(True, "Task created successfully.", status=201)
+
     return json_response(False, "Unable to create task.", serializer.errors, status=400)
 
 @api_view(['POST'])
@@ -160,9 +169,15 @@ def tasks_update(request):
         if due_date:
             task.due_date = due_date
 
+        # Check if assigned_to changed to send notification
+        old_assignee_id = task.assigned_to_id
         assigned_to = request.data.get('assigned_to')
-        if assigned_to:
+        if assigned_to and int(assigned_to) != old_assignee_id:
             task.assigned_to_id = assigned_to
+            Notifications.objects.create(
+                user_id=assigned_to,
+                message=f"Task reassigned to you: {task.title}"
+            )
 
         comment = request.data.get('comment')
         next_followup_date = request.data.get('next_followup_date')
@@ -176,6 +191,7 @@ def tasks_update(request):
 
         task.save()
         return json_response(True, "Task updated successfully.")
+
     except Tasks.DoesNotExist:
         return json_response(False, "Task not found.", status=404)
 
