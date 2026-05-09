@@ -8,7 +8,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-z@88s%_v!k4h&8ou0(@+=1w^ktve3_v(&z^l^r80+wwlfb0w_!')
 
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', 'tasks-management-production.up.railway.app,localhost').split(',')
 
