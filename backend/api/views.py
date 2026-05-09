@@ -7,6 +7,11 @@ from .utils import json_response
 from django.db.models import Q
 from django.utils import timezone
 from django.contrib.auth import authenticate
+from django.http import HttpResponse
+
+def index(request):
+    return HttpResponse("<h1>Task Manager Backend is Running</h1><p>The server is operational and connected to Railway MySQL.</p>")
+
 
 # AUTH
 @api_view(['POST'])
