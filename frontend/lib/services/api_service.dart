@@ -8,9 +8,9 @@ class ApiService {
   factory ApiService() => _instance;
 
   static String get baseUrl {
-    if (kIsWeb) return "http://localhost:8000";
-    if (Platform.isAndroid) return "http://10.0.2.2:8000";
-    return "http://localhost:8000";
+    if (kIsWeb) return "https://tasks-management-production.up.railway.app";
+    if (Platform.isAndroid) return "https://tasks-management-production.up.railway.app";
+    return "https://tasks-management-production.up.railway.app";
   }
   
   late final Dio _dio;

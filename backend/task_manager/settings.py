@@ -6,11 +6,12 @@ import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-z@88s%_v!k4h&8ou0(@+=1w^ktve3_v(&z^l^r80+wwlfb0w_!'
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-z@88s%_v!k4h&8ou0(@+=1w^ktve3_v(&z^l^r80+wwlfb0w_!')
 
-DEBUG = True
+DEBUG = os.environ.get('DJANGO_DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', 'tasks-management-production.up.railway.app,localhost').split(',')
+
 
 INSTALLED_APPS = [
     'django.contrib.admin',
