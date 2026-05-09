@@ -60,7 +60,7 @@ WSGI_APPLICATION = 'task_manager.wsgi.application'
 
 DATABASES = {
     'default': dj_database_url.config(
-        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
+        default="mysql://root:PoEknNUqSMRlElrSdjoGPpznmaBOBFOD@mysql.railway.internal:3306/railway",
         conn_max_age=600
     )
 }
