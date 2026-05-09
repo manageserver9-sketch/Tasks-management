@@ -5,6 +5,7 @@ import '../screens/dashboard_screen.dart';
 import '../screens/contact_list_screen.dart';
 import '../screens/task_list_screen.dart';
 import '../screens/settings_screen.dart';
+import '../screens/category_list_screen.dart';
 
 class AppDrawer extends StatelessWidget {
   const AppDrawer({super.key});
@@ -41,6 +42,19 @@ class AppDrawer extends StatelessWidget {
             },
           ),
           ListTile(
+            leading: const Icon(Icons.category),
+            title: const Text('Categories'),
+            onTap: () {
+              Navigator.pop(context);
+              if (ModalRoute.of(context)?.settings.name != '/categories') {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (_) => const CategoryListScreen(), settings: const RouteSettings(name: '/categories')),
+                );
+              }
+            },
+          ),
+          ListTile(
             leading: const Icon(Icons.people),
             title: const Text('Contacts'),
             onTap: () {
@@ -66,6 +80,7 @@ class AppDrawer extends StatelessWidget {
               }
             },
           ),
+
           ListTile(
             leading: const Icon(Icons.settings),
             title: const Text('Settings'),

@@ -8,18 +8,34 @@ class NotificationService {
   static Future<void> init() async {
     try {
       tz.initializeTimeZones();
-      const AndroidInitializationSettings initializationSettingsAndroid = AndroidInitializationSettings('@mipmap/ic_launcher');
+      const AndroidInitializationSettings initializationSettingsAndroid = AndroidInitializationSettings('@mipmap/launcher_icon');
       const DarwinInitializationSettings initializationSettingsDarwin = DarwinInitializationSettings();
-      const LinuxInitializationSettings initializationSettingsLinux = LinuxInitializationSettings(defaultActionName: 'Open notification');
       
-      const InitializationSettings initializationSettings = InitializationSettings(
+      const InitializationSettings initSettings = InitializationSettings(
         android: initializationSettingsAndroid,
         iOS: initializationSettingsDarwin,
-        macOS: initializationSettingsDarwin,
-        linux: initializationSettingsLinux,
       );
       
-      await _notificationsPlugin.initialize(settings: initializationSettings);
+      // FIX: The required named parameter is 'settings' in this version.
+      await _notificationsPlugin.initialize(
+        settings: initSettings,
+        onDidReceiveNotificationResponse: (NotificationResponse response) {
+          debugPrint("Notification tapped: ${response.payload}");
+        },
+      );
+
+      // Request Permissions for Android 13+ and iOS
+      if (!kIsWeb) {
+        final androidPlugin = _notificationsPlugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+        if (androidPlugin != null) {
+          await androidPlugin.requestNotificationsPermission();
+        }
+        
+        final iosPlugin = _notificationsPlugin.resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>();
+        if (iosPlugin != null) {
+          await iosPlugin.requestPermissions(alert: true, badge: true, sound: true);
+        }
+      }
     } catch (e) {
       debugPrint("NotificationService initialization failed: $e");
     }
@@ -31,6 +47,7 @@ class NotificationService {
       'Task Notifications',
       importance: Importance.max,
       priority: Priority.high,
+      showWhen: true,
     );
     const NotificationDetails details = NotificationDetails(android: androidDetails);
     await _notificationsPlugin.show(

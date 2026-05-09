@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+
 import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:shimmer/shimmer.dart';
@@ -19,17 +21,32 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   int touchedIndex = -1;
+  Timer? _pollingTimer;
 
   @override
   void initState() {
     super.initState();
     _refreshData();
+    _pollingTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
+      if (mounted) {
+        Provider.of<NotificationProvider>(context, listen: false).fetchNotifications();
+      }
+    });
   }
+
+  @override
+  void dispose() {
+    _pollingTimer?.cancel();
+    super.dispose();
+  }
+
 
   Future<void> _refreshData() async {
     await Provider.of<TaskProvider>(context, listen: false).fetchDashboardStats();
+    await Provider.of<TaskProvider>(context, listen: false).fetchTasks();
     await Provider.of<NotificationProvider>(context, listen: false).fetchNotifications();
   }
+
 
   @override
   Widget build(BuildContext context) {

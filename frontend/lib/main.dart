@@ -5,8 +5,10 @@ import 'themes/app_theme.dart';
 import 'providers/auth_provider.dart';
 import 'providers/task_provider.dart';
 import 'providers/contact_provider.dart';
+import 'providers/category_provider.dart';
 import 'providers/notification_provider.dart';
 import 'providers/theme_provider.dart';
+
 import 'screens/login_screen.dart';
 import 'screens/dashboard_screen.dart';
 import 'services/notification_service.dart';
@@ -47,9 +49,11 @@ void main() async {
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => TaskProvider()),
         ChangeNotifierProvider(create: (_) => ContactProvider()),
+        ChangeNotifierProvider(create: (_) => CategoryProvider()),
         ChangeNotifierProvider(create: (_) => NotificationProvider()),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
       ],
+
       child: const MyApp(),
     ),
   );

@@ -26,13 +26,15 @@ class ContactProvider with ChangeNotifier {
     }
   }
 
-  Future<bool> createContact(String name, String phone, {String email = ''}) async {
+  Future<bool> createContact(String name, String phone, {String email = '', int? categoryId}) async {
     try {
       final response = await _api.dio.post('/contacts/create.php', data: {
         'name': name,
         'phone': phone,
         'email': email,
+        'category': categoryId,
       });
+
       if (response.statusCode == 201) {
         fetchContacts();
         return true;
@@ -43,13 +45,15 @@ class ContactProvider with ChangeNotifier {
     return false;
   }
 
-  Future<bool> updateContact(int id, String name, String phone) async {
+  Future<bool> updateContact(int id, String name, String phone, {int? categoryId}) async {
     try {
       final response = await _api.dio.post('/contacts/update.php', data: {
         'id': id,
         'name': name,
         'phone': phone,
+        'category': categoryId,
       });
+
       if (response.statusCode == 200) {
         fetchContacts();
         return true;

@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../providers/contact_provider.dart';
+import '../providers/category_provider.dart';
 import '../widgets/app_drawer.dart';
 
 class ContactListScreen extends StatefulWidget {
@@ -20,8 +21,10 @@ class _ContactListScreenState extends State<ContactListScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<ContactProvider>(context, listen: false).fetchContacts();
+      Provider.of<CategoryProvider>(context, listen: false).fetchCategories();
     });
   }
+
 
   void _launchCaller(String number) async {
     final url = Uri.parse('tel:$number');
@@ -124,7 +127,26 @@ class _ContactListScreenState extends State<ContactListScreen> {
                                     ),
                                   ),
                                   title: Text(contact['name'], style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-                                  subtitle: Text(contact['phone'], style: const TextStyle(color: Colors.grey)),
+                                  subtitle: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(contact['phone'], style: const TextStyle(color: Colors.grey)),
+                                      if (contact['category_name'] != null)
+                                        Container(
+                                          margin: const EdgeInsets.only(top: 4),
+                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                          decoration: BoxDecoration(
+                                            color: Colors.indigo.withOpacity(0.1),
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          child: Text(
+                                            contact['category_name'],
+                                            style: TextStyle(fontSize: 10, color: Colors.indigo.shade700, fontWeight: FontWeight.bold),
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+
                                   trailing: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
@@ -165,70 +187,96 @@ class _ContactListScreenState extends State<ContactListScreen> {
   void _showAddDialog(BuildContext context) {
     final nameController = TextEditingController();
     final phoneController = TextEditingController();
+    int? selectedCategoryId;
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('New Contact'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(controller: nameController, decoration: const InputDecoration(labelText: 'Name')),
-            TextField(
-              controller: phoneController,
-              decoration: const InputDecoration(labelText: 'Phone', helperText: '10 digits'),
-              keyboardType: TextInputType.phone,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('New Contact'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(controller: nameController, decoration: const InputDecoration(labelText: 'Name')),
+              TextField(
+                controller: phoneController,
+                decoration: const InputDecoration(labelText: 'Phone', helperText: '10 digits'),
+                keyboardType: TextInputType.phone,
+              ),
+              const SizedBox(height: 10),
+              Consumer<CategoryProvider>(
+                builder: (context, catProvider, _) => DropdownButtonFormField<int>(
+                  decoration: const InputDecoration(labelText: 'Category'),
+                  value: selectedCategoryId,
+                  items: catProvider.categories.map((c) => DropdownMenuItem(value: c.id, child: Text(c.name))).toList(),
+                  onChanged: (v) => setDialogState(() => selectedCategoryId = v),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+            ElevatedButton(
+              onPressed: () async {
+                if (nameController.text.isNotEmpty && phoneController.text.length == 10) {
+                  final success = await Provider.of<ContactProvider>(context, listen: false)
+                      .createContact(nameController.text, phoneController.text, categoryId: selectedCategoryId);
+                  if (success) Navigator.pop(context);
+                }
+              },
+              child: const Text('Save'),
             ),
           ],
         ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
-          ElevatedButton(
-            onPressed: () async {
-              if (nameController.text.isNotEmpty && phoneController.text.length == 10) {
-                final success = await Provider.of<ContactProvider>(context, listen: false)
-                    .createContact(nameController.text, phoneController.text);
-                if (success) Navigator.pop(context);
-              }
-            },
-            child: const Text('Save'),
-          ),
-        ],
       ),
     );
   }
+
 
   void _showEditDialog(BuildContext context, dynamic contact) {
     final nameController = TextEditingController(text: contact['name']);
     final phoneController = TextEditingController(text: contact['phone']);
+    int? selectedCategoryId = contact['category'];
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Edit Contact'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(controller: nameController, decoration: const InputDecoration(labelText: 'Name')),
-            TextField(
-              controller: phoneController,
-              decoration: const InputDecoration(labelText: 'Phone'),
-              keyboardType: TextInputType.phone,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('Edit Contact'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(controller: nameController, decoration: const InputDecoration(labelText: 'Name')),
+              TextField(
+                controller: phoneController,
+                decoration: const InputDecoration(labelText: 'Phone'),
+                keyboardType: TextInputType.phone,
+              ),
+              const SizedBox(height: 10),
+              Consumer<CategoryProvider>(
+                builder: (context, catProvider, _) => DropdownButtonFormField<int>(
+                  decoration: const InputDecoration(labelText: 'Category'),
+                  value: selectedCategoryId,
+                  items: catProvider.categories.map((c) => DropdownMenuItem(value: c.id, child: Text(c.name))).toList(),
+                  onChanged: (v) => setDialogState(() => selectedCategoryId = v),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+            ElevatedButton(
+              onPressed: () async {
+                final success = await Provider.of<ContactProvider>(context, listen: false)
+                    .updateContact(contact['id'], nameController.text, phoneController.text, categoryId: selectedCategoryId);
+                if (success) Navigator.pop(context);
+              },
+              child: const Text('Update'),
             ),
           ],
         ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
-          ElevatedButton(
-            onPressed: () async {
-              final success = await Provider.of<ContactProvider>(context, listen: false)
-                  .updateContact(contact['id'], nameController.text, phoneController.text);
-              if (success) Navigator.pop(context);
-            },
-            child: const Text('Update'),
-          ),
-        ],
       ),
     );
   }
+
 }
